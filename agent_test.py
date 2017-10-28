@@ -42,14 +42,12 @@ class MinimaxPlayerTests(unittest.TestCase):
 
         self.assertIsNotNone(best_move)
 
-    def test_open_move_score_heuristics(self):
+    def test_minimax_WhenDepth1(self):
         player_factory = lambda: game_agent.MinimaxPlayer(search_depth=1, score_fn=sample_players.open_move_score)
         player1 = player_factory()
         player2 = player_factory()
         board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 20]
         game = create_board_with_state(player1, player2, board_state)
-
-        print(game.to_string())
 
         best_move = player1.minimax(game, player1.search_depth)
 

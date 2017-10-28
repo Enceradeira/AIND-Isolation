@@ -37,6 +37,7 @@ def custom_score(game, player):
     # TODO: finish this function!
     raise NotImplementedError
 
+
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
@@ -216,7 +217,8 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), game.get_legal_moves())
+        moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth-1)), game.get_legal_moves(self))
+
         best_move = max(list(moves), key=lambda t: t[1])
         return best_move[0]
 
@@ -226,9 +228,10 @@ class MinimaxPlayer(IsolationPlayer):
         nodes.
         """
         if depth == 0 or self.terminal_test(game):
-            return self.score(game, game.active_player)
+            return self.score(game, self)
 
-        return min(map(lambda m: (m, self.max_value(game.forecast_move(m), depth - 1)), game.get_legal_moves()))
+        opponent = game.get_opponent(self)
+        return min(map(lambda m: (m, self.max_value(game.forecast_move(m), depth - 1)), game.get_legal_moves(opponent)))
 
     def max_value(self, game, depth):
         """ Return the value for a loss (-1) if the game is over,
@@ -236,9 +239,9 @@ class MinimaxPlayer(IsolationPlayer):
         nodes.
         """
         if depth == 0 or self.terminal_test(game):
-            return self.score(game, game.active_player)
+            return self.score(game, self)
 
-        return max(map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), game.get_legal_moves()))
+        return max(map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), game.get_legal_moves(self)))
 
     def terminal_test(self, game):
         """ Return True if the game is over for the active player
