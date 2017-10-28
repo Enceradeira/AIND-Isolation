@@ -34,8 +34,11 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    return score_by_nr_possible_moves(game, player)
+
+
+def score_by_nr_possible_moves(game, player):
+    return len(game.get_legal_moves(player))
 
 
 def custom_score_2(game, player):
@@ -112,6 +115,7 @@ class IsolationPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
+
     def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
         self.search_depth = search_depth
         self.score = score_fn
@@ -124,6 +128,10 @@ class MinimaxPlayer(IsolationPlayer):
     search. You must finish and test this player to make sure it properly uses
     minimax to return a good move before the search time limit expires.
     """
+
+    def __init__(self):
+        super().__init__()
+        self.time_left = lambda: float('inf')
 
     def get_move(self, game, time_left):
         """Search for the best move from the available legal moves and return a
@@ -212,8 +220,44 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), game.get_legal_moves())
+        best_move = max(list(moves), key=lambda t: t[1])
+        return best_move[0]
+
+    def min_value(self, game, depth):
+        """ Return the value for a win (+1) if the game is over,
+        otherwise return the minimum value over all legal child
+        nodes.
+        """
+        if self.terminal_test(game):
+            return game.utility(game.active_player)
+
+        if depth == 0:
+            return self.score(game, game.active_player)
+
+        return min(map(lambda m: (m, self.max_value(game.forecast_move(m), depth - 1)), game.get_legal_moves()))
+
+    def max_value(self, game, depth):
+        """ Return the value for a loss (-1) if the game is over,
+        otherwise return the maximum value over all legal child
+        nodes.
+        """
+        if self.terminal_test(game):
+            return game.utility(game.active_player)
+
+        if depth == 0:
+            return self.score(game, game.active_player)
+
+        return max(map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), game.get_legal_moves()))
+
+    def terminal_test(self, game):
+        """ Return True if the game is over for the active player
+        and False otherwise.
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+        return not any(game.get_legal_moves())
 
 
 class AlphaBetaPlayer(IsolationPlayer):
