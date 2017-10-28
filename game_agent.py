@@ -34,12 +34,8 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    return score_by_nr_possible_moves(game, player)
-
-
-def score_by_nr_possible_moves(game, player):
-    return len(game.get_legal_moves(player))
-
+    # TODO: finish this function!
+    raise NotImplementedError
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -129,8 +125,8 @@ class MinimaxPlayer(IsolationPlayer):
     minimax to return a good move before the search time limit expires.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
+        super().__init__(search_depth, score_fn, timeout)
         self.time_left = lambda: float('inf')
 
     def get_move(self, game, time_left):
@@ -229,10 +225,7 @@ class MinimaxPlayer(IsolationPlayer):
         otherwise return the minimum value over all legal child
         nodes.
         """
-        if self.terminal_test(game):
-            return game.utility(game.active_player)
-
-        if depth == 0:
+        if depth == 0 or self.terminal_test(game):
             return self.score(game, game.active_player)
 
         return min(map(lambda m: (m, self.max_value(game.forecast_move(m), depth - 1)), game.get_legal_moves()))
@@ -242,10 +235,7 @@ class MinimaxPlayer(IsolationPlayer):
         otherwise return the maximum value over all legal child
         nodes.
         """
-        if self.terminal_test(game):
-            return game.utility(game.active_player)
-
-        if depth == 0:
+        if depth == 0 or self.terminal_test(game):
             return self.score(game, game.active_player)
 
         return max(map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), game.get_legal_moves()))

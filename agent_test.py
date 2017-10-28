@@ -7,9 +7,17 @@ import unittest
 
 import isolation
 import game_agent
+import sample_players
+import math
 
 from importlib import reload
 
+
+def create_board_with_state(player1, player2, board_state):
+    length = math.sqrt(len(board_state)-3)
+    game = isolation.Board(player1, player2, width=int(length), height=int(length))
+    game._board_state = board_state
+    return game
 
 class IsolationTest(unittest.TestCase):
     """Unit tests for isolation agents"""
@@ -24,36 +32,28 @@ class IsolationTest(unittest.TestCase):
 class MinimaxPlayerTests(unittest.TestCase):
     def setUp(self):
         reload(game_agent)
-        self.player1 = game_agent.MinimaxPlayer()
-        self.player2 = game_agent.MinimaxPlayer()
-        self.game = isolation.Board(self.player1, self.player2)
 
     def test_minimax_decision(self):
-        best_move = self.player1.minimax(self.game, 3)
+        player_factory = lambda: game_agent.MinimaxPlayer(search_depth=1, score_fn=sample_players.open_move_score)
+        player1 = player_factory()
+        player2 = player_factory()
+        game = isolation.Board(player1, player2)
+        best_move = player1.minimax(game, 3)
 
         self.assertIsNotNone(best_move)
 
+    def test_open_move_score_heuristics(self):
+        player_factory = lambda: game_agent.MinimaxPlayer(search_depth=1, score_fn=sample_players.open_move_score)
+        player1 = player_factory()
+        player2 = player_factory()
+        board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 20]
+        game = create_board_with_state(player1, player2, board_state)
 
-class ScoreByNrPossibleMovesTests(unittest.TestCase):
-    def setUp(self):
-        reload(game_agent)
-        self.player1 = game_agent.MinimaxPlayer()
-        self.player2 = game_agent.MinimaxPlayer()
-        self.game = isolation.Board(self.player1, self.player2)
+        print(game.to_string())
 
-    def test_score_by_nr_possible_moves(self):
-        score = lambda p: game_agent.score_by_nr_possible_moves(self.game, p)
-        self.assertEqual(score(self.player1), 49)
-        self.assertEqual(score(self.player2), 49)
-        # [[2, 1], [2, 5], [1, 3], [4, 6]]
-        # Player 1 moves
-        self.game.apply_move((2, 1))
-        self.assertEqual(score(self.player1), 6)
-        self.assertEqual(score(self.player2), 48)
-        # Player 2 moves
-        self.game.apply_move((2, 5))
-        self.assertEqual(score(self.player1), 6)
-        self.assertEqual(score(self.player2), 6)
+        best_move = player1.minimax(game, player1.search_depth)
+
+        self.assertIn(best_move,[(0, 3)])
 
 
 if __name__ == '__main__':
