@@ -217,9 +217,10 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth-1)), game.get_legal_moves(self))
+        moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), game.get_legal_moves())
 
-        best_move = max(list(moves), key=lambda t: t[1])
+        moves_as_list = list(moves)
+        best_move = max(moves_as_list, key=lambda t: t[1])
         return best_move[0]
 
     def min_value(self, game, depth):
@@ -227,30 +228,35 @@ class MinimaxPlayer(IsolationPlayer):
         otherwise return the minimum value over all legal child
         nodes.
         """
-        if depth == 0 or self.terminal_test(game):
+        if depth == 0:
+            return self.score(game, self)
+        if self.terminal_test(game, self):
             return self.score(game, self)
 
-        opponent = game.get_opponent(self)
-        return min(map(lambda m: (m, self.max_value(game.forecast_move(m), depth - 1)), game.get_legal_moves(opponent)))
+        min_values = map(lambda m: self.max_value(game.forecast_move(m), depth - 1), game.get_legal_moves())
+        return min(min_values)
 
     def max_value(self, game, depth):
         """ Return the value for a loss (-1) if the game is over,
         otherwise return the maximum value over all legal child
         nodes.
         """
-        if depth == 0 or self.terminal_test(game):
+        if depth == 0:
+            return self.score(game, self)
+        if self.terminal_test(game, self):
             return self.score(game, self)
 
-        return max(map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), game.get_legal_moves(self)))
+        max_values = map(lambda m: self.min_value(game.forecast_move(m), depth - 1), game.get_legal_moves())
+        return max(max_values)
 
-    def terminal_test(self, game):
+    def terminal_test(self, game, player):
         """ Return True if the game is over for the active player
         and False otherwise.
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        return not any(game.get_legal_moves())
+        return not any(game.get_legal_moves(player))
 
 
 class AlphaBetaPlayer(IsolationPlayer):
