@@ -214,12 +214,23 @@ class MinimaxPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
+        #assert game.active_player == self, "unexpected game state"
+
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), game.get_legal_moves())
+        legal_moves = list(game.get_legal_moves())
+        if not any(legal_moves):
+            return None
+
+        if len(legal_moves) <= 0:
+            print("shit 1")
+        moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), legal_moves)
 
         moves_as_list = list(moves)
+        moves_as_list_len = len(moves_as_list)
+        if moves_as_list_len == 0:
+            print("shit 2")
         best_move = max(moves_as_list, key=lambda t: t[1])
         return best_move[0]
 
@@ -228,26 +239,51 @@ class MinimaxPlayer(IsolationPlayer):
         otherwise return the minimum value over all legal child
         nodes.
         """
+        #assert game.active_player != self, "unexpected game state"
+
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
         if depth == 0:
+            # cut off (estimate score on this level for itself)
             return self.score(game, self)
-        if self.terminal_test(game, self):
+
+        if game.is_winner(self):
+            # self won
             return self.score(game, self)
 
         min_values = map(lambda m: self.max_value(game.forecast_move(m), depth - 1), game.get_legal_moves())
-        return min(min_values)
+        min_values_list = list(min_values)
+        if len(min_values_list) == 0:
+            pass
+        assert len(min_values_list) > 0, "min_values should be found"
+        return min(min_values_list)
 
     def max_value(self, game, depth):
         """ Return the value for a loss (-1) if the game is over,
         otherwise return the maximum value over all legal child
         nodes.
         """
+        #assert game.active_player == self, "unexpected game state"
+
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
         if depth == 0:
-            return self.score(game, self)
-        if self.terminal_test(game, self):
+            # cut off (estimate score on this level for itself)
             return self.score(game, self)
 
-        max_values = map(lambda m: self.min_value(game.forecast_move(m), depth - 1), game.get_legal_moves())
-        return max(max_values)
+        if game.is_loser(self):
+            # opponent won
+            return self.score(game, self)
+
+        legal_moves = game.get_legal_moves()
+        max_values = map(lambda m: self.min_value(game.forecast_move(m), depth - 1), legal_moves)
+        max_value_list = list(max_values)
+        if len(max_value_list) == 0:
+            pass
+        assert len(max_value_list) > 0, "max_values should be found"
+        return max(max_value_list)
 
     def terminal_test(self, game, player):
         """ Return True if the game is over for the active player

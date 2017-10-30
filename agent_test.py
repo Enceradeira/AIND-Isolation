@@ -69,11 +69,18 @@ class MinimaxPlayerTests(unittest.TestCase):
                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 20]
         game = create_board_with_state(player1, player2, board_state)
 
-        print(game.to_string())
-
         best_move = player1.minimax(game, player1.search_depth)
 
         self.assertIn(best_move, [(3, 0)])
+
+    def test_minimax_WhenIsAWholeGame(self):
+        player_factory = lambda: game_agent.MinimaxPlayer(search_depth=3, score_fn=sample_players.open_move_score)
+        player1 = player_factory()
+        player1.Name = 'Max'
+        player2 = player_factory()
+        player2.Name = 'Min'
+        board = isolation.Board(player1, player2)
+        board.play(10000)
 
 
 if __name__ == '__main__':
