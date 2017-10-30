@@ -214,7 +214,7 @@ class MinimaxPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        #assert game.active_player == self, "unexpected game state"
+        # assert game.active_player == self, "unexpected game state"
 
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
@@ -223,15 +223,9 @@ class MinimaxPlayer(IsolationPlayer):
         if not any(legal_moves):
             return None
 
-        if len(legal_moves) <= 0:
-            print("shit 1")
         moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), legal_moves)
 
-        moves_as_list = list(moves)
-        moves_as_list_len = len(moves_as_list)
-        if moves_as_list_len == 0:
-            print("shit 2")
-        best_move = max(moves_as_list, key=lambda t: t[1])
+        best_move = max(moves, key=lambda t: t[1])
         return best_move[0]
 
     def min_value(self, game, depth):
@@ -239,60 +233,40 @@ class MinimaxPlayer(IsolationPlayer):
         otherwise return the minimum value over all legal child
         nodes.
         """
-        #assert game.active_player != self, "unexpected game state"
-
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
-
-        if depth == 0:
-            # cut off (estimate score on this level for itself)
-            return self.score(game, self)
-
-        if game.is_winner(self):
-            # self won
-            return self.score(game, self)
-
-        min_values = map(lambda m: self.max_value(game.forecast_move(m), depth - 1), game.get_legal_moves())
-        min_values_list = list(min_values)
-        if len(min_values_list) == 0:
-            pass
-        assert len(min_values_list) > 0, "min_values should be found"
-        return min(min_values_list)
+        return self.value(game, depth, self.max_value, min)
 
     def max_value(self, game, depth):
         """ Return the value for a loss (-1) if the game is over,
         otherwise return the maximum value over all legal child
         nodes.
         """
-        #assert game.active_player == self, "unexpected game state"
+        return self.value(game, depth, self.min_value, max)
 
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
-
-        if depth == 0:
-            # cut off (estimate score on this level for itself)
-            return self.score(game, self)
-
-        if game.is_loser(self):
-            # opponent won
-            return self.score(game, self)
-
+    def value(self, game, depth, child_values, optimal_value):
+        """
+        Evaluates the value a game state
+        :param game: the game which state is being evaluated
+        :param depth: the depth in the game-tree
+        :param child_values: a function to retrieve the child game states in the game tree
+        :param optimal_value: a function to choose the optimal value of all child game states
+        :return: the value of the game state
+        """
         legal_moves = game.get_legal_moves()
-        max_values = map(lambda m: self.min_value(game.forecast_move(m), depth - 1), legal_moves)
-        max_value_list = list(max_values)
-        if len(max_value_list) == 0:
-            pass
-        assert len(max_value_list) > 0, "max_values should be found"
-        return max(max_value_list)
+        if self.is_terminal(game, legal_moves, depth):
+            return self.score(game, self)
 
-    def terminal_test(self, game, player):
-        """ Return True if the game is over for the active player
-        and False otherwise.
+        values = map(lambda m: child_values(game.forecast_move(m), depth - 1), legal_moves)
+        return optimal_value(values)
+
+    def is_terminal(self, game, legal_moves, depth):
+        """ Checks if the at this level of the game tree a score should be returned.
+        :return : True for a score should be returned, False for continuing evaluating down the game tree.
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        return not any(game.get_legal_moves(player))
+        # either depth reached for estimation or game is over
+        return depth == 0 or not any(legal_moves)
 
 
 class AlphaBetaPlayer(IsolationPlayer):
