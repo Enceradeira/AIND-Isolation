@@ -215,18 +215,7 @@ class MinimaxPlayer(IsolationPlayer):
                 testing.
         """
         # assert game.active_player == self, "unexpected game state"
-
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
-
-        legal_moves = list(game.get_legal_moves())
-        if not any(legal_moves):
-            return None
-
-        moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), legal_moves)
-
-        best_move = max(moves, key=lambda t: t[1])
-        return best_move[0]
+        return self.max_value(game, depth)[0];
 
     def min_value(self, game, depth):
         """ Return the value for a win (+1) if the game is over,
@@ -242,21 +231,22 @@ class MinimaxPlayer(IsolationPlayer):
         """
         return self.value(game, depth, self.min_value, max)
 
-    def value(self, game, depth, child_values, optimal_value):
+    def value(self, game, depth, child_value, optimal_value):
         """
         Evaluates the value a game state
         :param game: the game which state is being evaluated
         :param depth: the depth in the game-tree
-        :param child_values: a function to retrieve the child game states in the game tree
+        :param child_value: a function to retrieve the child game states in the game tree
         :param optimal_value: a function to choose the optimal value of all child game states
         :return: the value of the game state
         """
         legal_moves = game.get_legal_moves()
         if self.is_terminal(game, legal_moves, depth):
-            return self.score(game, self)
+            return (None, self.score(game, self))
 
-        values = map(lambda m: child_values(game.forecast_move(m), depth - 1), legal_moves)
-        return optimal_value(values)
+        values = map(lambda m: (m, child_value(game.forecast_move(m), depth - 1)[1]), legal_moves)
+        value = optimal_value(values, key=lambda t: t[1])
+        return value
 
     def is_terminal(self, game, legal_moves, depth):
         """ Checks if the at this level of the game tree a score should be returned.
@@ -359,17 +349,7 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
-
-        legal_moves = list(game.get_legal_moves())
-        if not any(legal_moves):
-            return (-1, -1)
-
-        moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), legal_moves)
-
-        best_move = max(moves, key=lambda t: t[1])
-        return best_move[0]
+        return self.max_value(game, depth)[0];
 
     def min_value(self, game, depth):
         """ Return the value for a win (+1) if the game is over,
@@ -385,21 +365,22 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         return self.value(game, depth, self.min_value, max)
 
-    def value(self, game, depth, child_values, optimal_value):
+    def value(self, game, depth, child_value, optimal_value):
         """
         Evaluates the value a game state
         :param game: the game which state is being evaluated
         :param depth: the depth in the game-tree
-        :param child_values: a function to retrieve the child game states in the game tree
+        :param child_value: a function to retrieve the child game states in the game tree
         :param optimal_value: a function to choose the optimal value of all child game states
         :return: the value of the game state
         """
         legal_moves = game.get_legal_moves()
         if self.is_terminal(game, legal_moves, depth):
-            return self.score(game, self)
+            return (None, self.score(game, self))
 
-        values = map(lambda m: child_values(game.forecast_move(m), depth - 1), legal_moves)
-        return optimal_value(values)
+        values = map(lambda m: (m, child_value(game.forecast_move(m), depth - 1)[1]), legal_moves)
+        value = optimal_value(values, key=lambda t: t[1])
+        return value
 
     def is_terminal(self, game, legal_moves, depth):
         """ Checks if the at this level of the game tree a score should be returned.
