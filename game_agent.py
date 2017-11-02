@@ -275,6 +275,10 @@ class AlphaBetaPlayer(IsolationPlayer):
     make sure it returns a good move before the search time limit expires.
     """
 
+    def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
+        super().__init__(search_depth, score_fn, timeout)
+        self.time_left = lambda: float('inf')
+
     def get_move(self, game, time_left):
         """Search for the best move from the available legal moves and return a
         result before the time limit expires.
@@ -360,7 +364,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         legal_moves = list(game.get_legal_moves())
         if not any(legal_moves):
-            return None
+            return (-1, -1)
 
         moves = map(lambda m: (m, self.min_value(game.forecast_move(m), depth - 1)), legal_moves)
 

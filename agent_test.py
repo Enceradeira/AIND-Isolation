@@ -13,9 +13,38 @@ import math
 from importlib import reload
 
 
-def create_board_with_state(player1, player2, board_state):
+class ExpansionRecorder:
+    ''' Records how an algorithm expands the game-tree'''
+
+    def __init__(self):
+        self._moves = set()
+
+    def add(self, move):
+        self._moves.add(move)
+
+    @property
+    def moves(self):
+        return self._moves
+
+
+class BoardSpy(isolation.Board):
+    ''' A Spy in order that we can observer and test algorithms '''
+
+    def __init__(self, player_1, player_2, expansion_recorder, width=7, height=7):
+        super().__init__(player_1, player_2, width, height)
+        self.expansion_recorder = expansion_recorder
+
+    def create_board(self):
+        return BoardSpy(self._player_1, self._player_2, self.expansion_recorder, width=self.width, height=self.height)
+
+    def forecast_move(self, move):
+        self.expansion_recorder.add(move)
+        return super().forecast_move(move)
+
+
+def create_board_with_state(player1, player2, board_state, expansion_recorder=ExpansionRecorder()):
     length = math.sqrt(len(board_state) - 3)
-    game = isolation.Board(player1, player2, width=int(length), height=int(length))
+    game = BoardSpy(player1, player2, expansion_recorder, width=int(length), height=int(length))
     game._board_state = board_state
     return game
 
@@ -46,9 +75,7 @@ class MinimaxPlayerTests(unittest.TestCase):
     def test_minimax_WhenDepth1(self):
         player_factory = lambda: game_agent.MinimaxPlayer(search_depth=1, score_fn=sample_players.open_move_score)
         player1 = player_factory()
-        player1.Name = 'Max'
         player2 = player_factory()
-        player2.Name = 'Min'
         board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
                        1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0,
                        0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 20]
@@ -61,9 +88,7 @@ class MinimaxPlayerTests(unittest.TestCase):
     def test_minimax_WhenDepth3(self):
         player_factory = lambda: game_agent.MinimaxPlayer(search_depth=3, score_fn=sample_players.open_move_score)
         player1 = player_factory()
-        player1.Name = 'Max'
         player2 = player_factory()
-        player2.Name = 'Min'
         board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                        1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0,
                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 20]
@@ -76,11 +101,58 @@ class MinimaxPlayerTests(unittest.TestCase):
     def test_minimax_WhenIsAWholeGame(self):
         player_factory = lambda: game_agent.MinimaxPlayer(search_depth=3, score_fn=sample_players.open_move_score)
         player1 = player_factory()
-        player1.Name = 'Max'
         player2 = player_factory()
-        player2.Name = 'Min'
         board = isolation.Board(player1, player2)
         board.play(10000)
+
+
+class AlphaBetaPlayerTests(unittest.TestCase):
+    def setUp(self):
+        reload(game_agent)
+
+    def test_alphabeta_WhenDepth1(self):
+        player_factory = lambda: game_agent.AlphaBetaPlayer(search_depth=1, score_fn=sample_players.open_move_score)
+        player1 = player_factory()
+        player2 = player_factory()
+        board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
+                       1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0,
+                       0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 20]
+        game = create_board_with_state(player1, player2, board_state)
+
+        best_move = player1.alphabeta(game, player1.search_depth)
+
+        self.assertIn(best_move, [(0, 3)])
+
+    def test_alphabeta_WhenDepth3(self):
+        player_factory = lambda: game_agent.AlphaBetaPlayer(search_depth=3, score_fn=sample_players.open_move_score)
+        player1 = player_factory()
+        player2 = player_factory()
+        board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+                       1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0,
+                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 20]
+        game = create_board_with_state(player1, player2, board_state)
+
+        best_move = player1.alphabeta(game, player1.search_depth)
+
+        self.assertIn(best_move, [(3, 0)])
+
+    def test_alphabeta(self):
+        expansion_recorder = ExpansionRecorder()
+        player_factory = lambda: game_agent.AlphaBetaPlayer(search_depth=2, score_fn=sample_players.open_move_score)
+        player1 = player_factory()
+        player1.name = "Max"
+        player2 = player_factory()
+        player2.name = "Min"
+        board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
+                       1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0,
+                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 23]
+        game = create_board_with_state(player1, player2, board_state, expansion_recorder)
+
+        print(game.to_string())
+
+        player1.alphabeta(game, player1.search_depth, 5.0, 2.0)
+
+        self.assertSetEqual(expansion_recorder.moves, {(4, 0), (3, 3), (2, 6)}, "unexpected nodes were expanded")
 
 
 if __name__ == '__main__':

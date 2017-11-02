@@ -92,12 +92,15 @@ class Board(object):
 
     def copy(self):
         """ Return a deep copy of the current board. """
-        new_board = Board(self._player_1, self._player_2, width=self.width, height=self.height)
+        new_board = self.create_board()
         new_board.move_count = self.move_count
         new_board._active_player = self._active_player
         new_board._inactive_player = self._inactive_player
         new_board._board_state = copy(self._board_state)
         return new_board
+
+    def create_board(self):
+        return Board(self._player_1, self._player_2, width=self.width, height=self.height)
 
     def forecast_move(self, move):
         """Return a deep copy of the current game with an input move applied to
