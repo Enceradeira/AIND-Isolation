@@ -60,8 +60,7 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    return move_away_from_center_of_gravity_score(game, player)
 
 
 def custom_score_3(game, player):
@@ -111,6 +110,17 @@ def crunch_opponent_score(game, player):
                                 game.get_legal_moves(opponent))
         return max(opponent_distance)
 
+
+def move_away_from_center_of_gravity_score(game, player):
+    all_cells = [(row, column) for row in range(game.height) for column in range(game.width)]
+    blank_spaces = game.get_blank_spaces()
+    player_location = game.get_player_location(player)
+    taken_cells = [c for c in all_cells if c not in blank_spaces and c != player_location]
+    mean_row = sum(map(lambda r: r[0], taken_cells)) / len(taken_cells)
+    mean_column = sum(map(lambda r: r[1], taken_cells)) / len(taken_cells)
+    player_row = player_location[0]
+    player_column = player_location[1]
+    return math.sqrt(pow(mean_row - player_row, 2) + pow(mean_column - player_column, 2))
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
