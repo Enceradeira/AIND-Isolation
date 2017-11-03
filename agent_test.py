@@ -42,6 +42,19 @@ class BoardSpy(isolation.Board):
         return super().forecast_move(move)
 
 
+class AlphaBetaPlayerStub(game_agent.AlphaBetaPlayer):
+    def __init__(self, search_depth=3, score_fn=game_agent.custom_score, timeout=10., max_nr_iteration=25):
+        super().__init__(search_depth, score_fn, timeout)
+        self.max_nr_iteration = max_nr_iteration
+
+    def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
+        self.max_nr_iteration -= 1
+        if self.max_nr_iteration < 0:
+            raise game_agent.SearchTimeout()
+
+        return super().alphabeta(game, depth, alpha, beta)
+
+
 def create_board_with_state(player1, player2, board_state, expansion_recorder=ExpansionRecorder()):
     length = math.sqrt(len(board_state) - 3)
     game = BoardSpy(player1, player2, expansion_recorder, width=int(length), height=int(length))
@@ -153,19 +166,19 @@ class AlphaBetaPlayerTests(unittest.TestCase):
                             "unexpected nodes were expanded")
 
     def test_get_move_WhenNoTimeRestriction(self):
-        expansion_recorder = ExpansionRecorder()
-        player_factory = lambda: game_agent.AlphaBetaPlayer(search_depth=2, score_fn=sample_players.open_move_score)
+        player_factory = lambda: AlphaBetaPlayerStub(search_depth=2, score_fn=sample_players.open_move_score,
+                                                     max_nr_iteration=5)
         player1 = player_factory()
         player2 = player_factory()
         board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
                        1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0,
                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 23]
-        game = create_board_with_state(player1, player2, board_state, expansion_recorder)
+        game = create_board_with_state(player1, player2, board_state)
 
         time_left = float('inf')
         move = player1.get_move(game, lambda: time_left)
 
-        self.assertEqual(move, (3, 3))
+        self.assertIn(move, [(3, 3), (6, 0)])
 
 
 if __name__ == '__main__':
