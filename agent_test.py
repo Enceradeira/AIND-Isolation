@@ -152,6 +152,21 @@ class AlphaBetaPlayerTests(unittest.TestCase):
                             {(6, 4), (7, 3), (2, 6), (3, 3), (7, 1), (4, 4), (5, 7), (6, 0), (3, 7), (4, 0)},
                             "unexpected nodes were expanded")
 
+    def test_get_move_WhenNoTimeRestriction(self):
+        expansion_recorder = ExpansionRecorder()
+        player_factory = lambda: game_agent.AlphaBetaPlayer(search_depth=2, score_fn=sample_players.open_move_score)
+        player1 = player_factory()
+        player2 = player_factory()
+        board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
+                       1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0,
+                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 23]
+        game = create_board_with_state(player1, player2, board_state, expansion_recorder)
+
+        time_left = float('inf')
+        move = player1.get_move(game, lambda: time_left)
+
+        self.assertEqual(move, (3, 3))
+
 
 if __name__ == '__main__':
     unittest.main()
