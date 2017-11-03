@@ -181,5 +181,49 @@ class AlphaBetaPlayerTests(unittest.TestCase):
         self.assertIn(move, [(3, 3), (6, 0)])
 
 
+class CrunchOpponentScoreTests(unittest.TestCase):
+    def setUp(self):
+        reload(game_agent)
+
+    def test_custom_score_WhenDistance0(self):
+        player_factory = lambda: game_agent.MinimaxPlayer(search_depth=3, score_fn=sample_players.open_move_score)
+
+        player1 = player_factory()
+        player2 = player_factory()
+        board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0,
+                       0, 0, 0, 1, 0, 0, 0, 0, 0,
+                       0, 0, 0, 1, 1, 1, 0, 0, 0,
+                       0, 0, 1, 0, 1, 1, 1, 0, 0,
+                       0, 0, 1, 0, 0, 1, 0, 0, 0,
+                       0, 1, 0, 1, 1, 1, 1, 0, 0,
+                       0, 0, 0, 1, 0, 1, 1, 0, 0,
+                       0, 0, 0, 0, 0, 0, 0, 0, 0,
+                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 38]
+        game = create_board_with_state(player1, player2, board_state)
+
+        print(game.to_string())
+
+        self.assertEqual(game_agent.crunch_opponent_score(game, player1), 0)
+        self.assertEqual(game_agent.crunch_opponent_score(game, player2), 0)
+
+    def test_custom_score_WhenDistanceGreaterThan0(self):
+        player_factory = lambda: game_agent.MinimaxPlayer(search_depth=3, score_fn=sample_players.open_move_score)
+
+        player1 = player_factory()
+        player2 = player_factory()
+        board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
+                       1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0,
+                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 23]
+        game = create_board_with_state(player1, player2, board_state)
+
+        print(game.to_string())
+
+        self.assertAlmostEqual(game_agent.crunch_opponent_score(game, player1), -2.23606797749979)
+        self.assertAlmostEqual(game_agent.crunch_opponent_score(game, player2), -1)
+
+
+
+
+
 if __name__ == '__main__':
     unittest.main()

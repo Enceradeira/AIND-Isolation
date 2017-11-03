@@ -3,6 +3,7 @@ test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
 import random
+import math
 
 
 class SearchTimeout(Exception):
@@ -34,8 +35,7 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    return crunch_opponent_score(game, player)
 
 
 def custom_score_2(game, player):
@@ -88,6 +88,28 @@ def custom_score_3(game, player):
     """
     # TODO: finish this function!
     raise NotImplementedError
+
+
+def crunch_opponent_score(game, player):
+    """ Calculates the heuristic value by favouring game states that lead to an player moving
+    as close as possible to the opponent (crunching it)
+    """
+    opponent = game.get_opponent(player)
+    player_location = game.get_player_location(player)
+    opponent_location = game.get_player_location(opponent)
+    player_row = player_location[0]
+    player_column = player_location[1]
+    opponent_row = opponent_location[0]
+    opponent_column = opponent_location[1]
+    diff_row = abs(player_row - opponent_row)
+    diff_column = abs(player_column - opponent_column)
+    if (diff_column == 1 and diff_row == 2) or (diff_column == 2 and diff_row == 1):
+        # opponent could have moved to current player location. Therefore Player 'stole' a possible move
+        return 0  # Max score for closest distance to opponent
+    else:
+        opponent_distance = map(lambda l: -math.sqrt(pow(l[0] - player_row, 2) + pow(l[1] - player_column, 2)),
+                                game.get_legal_moves(opponent))
+        return max(opponent_distance)
 
 
 class IsolationPlayer:
