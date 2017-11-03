@@ -85,14 +85,19 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    return maximize_player_moves_than_minimize_opponents_moves_score(game, player)
 
 
 def crunch_opponent_score(game, player):
     """ Calculates the heuristic value by favouring game states that lead to an player moving
     as close as possible to the opponent (crunching it)
     """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     opponent = game.get_opponent(player)
     player_location = game.get_player_location(player)
     opponent_location = game.get_player_location(opponent)
@@ -106,21 +111,51 @@ def crunch_opponent_score(game, player):
         # opponent could have moved to current player location. Therefore Player 'stole' a possible move
         return 0  # Max score for closest distance to opponent
     else:
+        opponent_moves = game.get_legal_moves(opponent)
+        if not any(opponent_moves):
+            return float("inf")
         opponent_distance = map(lambda l: -math.sqrt(pow(l[0] - player_row, 2) + pow(l[1] - player_column, 2)),
-                                game.get_legal_moves(opponent))
+                                opponent_moves)
         return max(opponent_distance)
 
 
 def move_away_from_center_of_gravity_score(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     all_cells = [(row, column) for row in range(game.height) for column in range(game.width)]
     blank_spaces = game.get_blank_spaces()
     player_location = game.get_player_location(player)
     taken_cells = [c for c in all_cells if c not in blank_spaces and c != player_location]
-    mean_row = sum(map(lambda r: r[0], taken_cells)) / len(taken_cells)
-    mean_column = sum(map(lambda r: r[1], taken_cells)) / len(taken_cells)
+    len_taken_cells = len(taken_cells)
+    if (len_taken_cells > 0):
+        mean_row = sum(map(lambda r: r[0], taken_cells)) / len_taken_cells
+        mean_column = sum(map(lambda r: r[1], taken_cells)) / len_taken_cells
+    else:
+        mean_row = (game.height - 1) / 2
+        mean_column = (game.width - 1) / 2
     player_row = player_location[0]
     player_column = player_location[1]
     return math.sqrt(pow(mean_row - player_row, 2) + pow(mean_column - player_column, 2))
+
+
+def maximize_player_moves_than_minimize_opponents_moves_score(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    game_progress = 1 - (len(game.get_blank_spaces()) / (game.height * game.width))
+    own_moves_weighted = (1 - game_progress) * own_moves  # number of players move become less important
+    opp_moves_weighted = game_progress * opp_moves  # number of opponent moves becomve more important
+    return float(own_moves_weighted - opp_moves_weighted)
+
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
