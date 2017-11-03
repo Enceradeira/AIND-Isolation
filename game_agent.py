@@ -349,46 +349,49 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        return self.max_value(game, depth, alpha, beta)[0];
+        return self.max_value(game, depth, alpha, beta)[0]
 
     def min_value(self, game, depth, alpha, beta):
         """ Return the value for a win (+1) if the game is over,
         otherwise return the minimum value over all legal child
         nodes.
         """
-        return self.value(game, depth, alpha, beta, self.max_value, lambda u, b: u < b)
-
-    def max_value(self, game, depth, alpha, beta):
-        """ Return the value for a loss (-1) if the game is over,
-        otherwise return the maximum value over all legal child
-        nodes.
-        """
-        return self.value(game, depth, alpha, beta, self.min_value, lambda u, b: u > b)
-
-    def value(self, game, depth, alpha, beta, child_value, optimal_value):
-        """
-        Evaluates the value a game state
-        :param game: the game which state is being evaluated
-        :param depth: the depth in the game-tree
-        :param child_value: a function to retrieve the child game states in the game tree
-        :param optimal_value: a function to choose the optimal value of all child game states
-        :return: the value of the game state
-        """
+        # return self.value(game, depth, alpha, beta, self.max_value, lambda u, b: u < b)
         legal_moves = game.get_legal_moves()
         if self.is_terminal(game, legal_moves, depth):
             return (None, self.score(game, self))
 
         optimal_move = None
         for move in legal_moves:
-            value = child_value(game.forecast_move(move), depth - 1, alpha, beta)[1]
-            if optimal_move == None or optimal_value(value, optimal_move[1]):
+            value = self.max_value(game.forecast_move(move), depth - 1, alpha, beta)[1]
+            if optimal_move == None or value < optimal_move[1]:
                 optimal_move = (move, value)
+            if value <= alpha:
+                return optimal_move
+            beta = min(beta, value)
 
         return optimal_move
 
-        # values = map(lambda m: (m, child_value(game.forecast_move(m), depth - 1)[1]), legal_moves)
-        # value = optimal_value(values, key=lambda t: t[1])
-        # return value
+    def max_value(self, game, depth, alpha, beta):
+        """ Return the value for a loss (-1) if the game is over,
+        otherwise return the maximum value over all legal child
+        nodes.
+        """
+        # return self.value(game, depth, alpha, beta, self.min_value, lambda u, b: u > b)
+        legal_moves = game.get_legal_moves()
+        if self.is_terminal(game, legal_moves, depth):
+            return (None, self.score(game, self))
+
+        optimal_move = None
+        for move in legal_moves:
+            value = self.min_value(game.forecast_move(move), depth - 1, alpha, beta)[1]
+            if optimal_move == None or value > optimal_move[1]:
+                optimal_move = (move, value)
+            if value >= beta:
+                return optimal_move
+            alpha = max(alpha, value)
+
+        return optimal_move
 
     def is_terminal(self, game, legal_moves, depth):
         """ Checks if the at this level of the game tree a score should be returned.
