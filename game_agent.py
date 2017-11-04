@@ -35,7 +35,13 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    return crunch_opponent_score(game, player)
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    return SumCellValuesPlayerMinusSumCellValuesOpponent(game, player)
 
 
 def custom_score_2(game, player):
@@ -60,7 +66,13 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    return move_away_from_center_of_gravity_score(game, player)
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    return SumCellValuesSqPlayerMinusSumCellSqValuesOpponent(game, player)
 
 
 def custom_score_3(game, player):
@@ -85,7 +97,100 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    return maximize_player_moves_than_minimize_opponents_moves_score(game, player)
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    return SumCellValuesPow3PlayerMinusSumCellPow3ValuesOpponent(game, player)
+
+
+def opening_score(location):
+    if location == (4, 4):
+        return float('inf')
+    else:
+        return float('-inf')
+
+
+CELL_VALUES = {(0, 0): 0.25, (0, 1): 0.38, (0, 2): 0.5, (0, 3): 0.5, (0, 4): 0.5, (0, 5): 0.38, (0, 6): 0.25,
+               (1, 0): 0.38, (1, 1): 0.5, (1, 2): 0.75, (1, 3): 0.75, (1, 4): 0.75, (1, 5): 0.5, (1, 6): 0.38,
+               (2, 0): 0.5, (2, 1): 0.75, (2, 2): 1.0, (2, 3): 1.0, (2, 4): 1.0, (2, 5): 0.75, (2, 6): 0.5, (3, 0): 0.5,
+               (3, 1): 0.75, (3, 2): 1.0, (3, 3): 1.0, (3, 4): 1.0, (3, 5): 0.75, (3, 6): 0.5, (4, 0): 0.5,
+               (4, 1): 0.75, (4, 2): 1.0, (4, 3): 1.0, (4, 4): 1.0, (4, 5): 0.75, (4, 6): 0.5, (5, 0): 0.38,
+               (5, 1): 0.5, (5, 2): 0.75, (5, 3): 0.75, (5, 4): 0.75, (5, 5): 0.5, (5, 6): 0.38, (6, 0): 0.25,
+               (6, 1): 0.38, (6, 2): 0.5, (6, 3): 0.5, (6, 4): 0.5, (6, 5): 0.38, (6, 6): 0.25}
+
+CELL_VALUES_SQ = {(0, 0): 0.07, (0, 1): 0.15, (0, 2): 0.25, (0, 3): 0.25, (0, 4): 0.25, (0, 5): 0.15, (0, 6): 0.07,
+                  (1, 0): 0.15, (1, 1): 0.25, (1, 2): 0.57, (1, 3): 0.57, (1, 4): 0.57, (1, 5): 0.25, (1, 6): 0.15,
+                  (2, 0): 0.25, (2, 1): 0.57, (2, 2): 1.0, (2, 3): 1.0, (2, 4): 1.0, (2, 5): 0.57, (2, 6): 0.25,
+                  (3, 0): 0.25, (3, 1): 0.57, (3, 2): 1.0, (3, 3): 1.0, (3, 4): 1.0, (3, 5): 0.57, (3, 6): 0.25,
+                  (4, 0): 0.25, (4, 1): 0.57, (4, 2): 1.0, (4, 3): 1.0, (4, 4): 1.0, (4, 5): 0.57, (4, 6): 0.25,
+                  (5, 0): 0.15, (5, 1): 0.25, (5, 2): 0.57, (5, 3): 0.57, (5, 4): 0.57, (5, 5): 0.25, (5, 6): 0.15,
+                  (6, 0): 0.07, (6, 1): 0.15, (6, 2): 0.25, (6, 3): 0.25, (6, 4): 0.25, (6, 5): 0.15, (6, 6): 0.07}
+
+CELL_VALUES_POW3 = {(0, 0): 0.02, (0, 1): 0.06, (0, 2): 0.13, (0, 3): 0.13, (0, 4): 0.13, (0, 5): 0.06, (0, 6): 0.02,
+                    (1, 0): 0.06, (1, 1): 0.13, (1, 2): 0.43, (1, 3): 0.43, (1, 4): 0.43, (1, 5): 0.13, (1, 6): 0.06,
+                    (2, 0): 0.13, (2, 1): 0.43, (2, 2): 1.0, (2, 3): 1.0, (2, 4): 1.0, (2, 5): 0.43, (2, 6): 0.13,
+                    (3, 0): 0.13, (3, 1): 0.43, (3, 2): 1.0, (3, 3): 1.0, (3, 4): 1.0, (3, 5): 0.43, (3, 6): 0.13,
+                    (4, 0): 0.13, (4, 1): 0.43, (4, 2): 1.0, (4, 3): 1.0, (4, 4): 1.0, (4, 5): 0.43, (4, 6): 0.13,
+                    (5, 0): 0.06, (5, 1): 0.13, (5, 2): 0.43, (5, 3): 0.43, (5, 4): 0.43, (5, 5): 0.13, (5, 6): 0.06,
+                    (6, 0): 0.02, (6, 1): 0.06, (6, 2): 0.13, (6, 3): 0.13, (6, 4): 0.13, (6, 5): 0.06, (6, 6): 0.02}
+
+
+def SumCellValuesPlayer(game, player):
+    player_moves_value = moves_value(game, player, CELL_VALUES)
+    return player_moves_value
+
+
+def SumAvgCellValuePlayer(game, player):
+    player_moves_value = moves_value_avg(game, player, CELL_VALUES)
+    return player_moves_value
+
+
+def SumCellValuesPlayerMinusSumCellValuesOpponent(game, player):
+    return moves_value(game, player, CELL_VALUES) - moves_value(game, game.get_opponent(player), CELL_VALUES)
+
+
+def SumAvgCellValuesPlayerMinusSumAvgCellValuesOpponent(game, player):
+    return moves_value_avg(game, player, CELL_VALUES) - moves_value_avg(game, game.get_opponent(player), CELL_VALUES)
+
+
+def SumCellValuesSqPlayer(game, player):
+    player_moves_value = moves_value(game, player, CELL_VALUES_SQ)
+    return player_moves_value
+
+
+def SumAvgCellValueSqPlayer(game, player):
+    player_moves_value = moves_value_avg(game, player, CELL_VALUES_SQ)
+    return player_moves_value
+
+
+def SumCellValuesSqPlayerMinusSumCellSqValuesOpponent(game, player):
+    return moves_value(game, player, CELL_VALUES_SQ) - moves_value(game, game.get_opponent(player),
+                                                                   CELL_VALUES_SQ)
+
+def SumCellValuesPow3PlayerMinusSumCellPow3ValuesOpponent(game, player):
+    return moves_value(game, player, CELL_VALUES_POW3) - moves_value(game, game.get_opponent(player),
+                                                                     CELL_VALUES_POW3)
+
+
+def SumAvgCellValuesSqPlayerMinusSumAvgCellValuesSqOpponent(game, player):
+    return moves_value_avg(game, player, CELL_VALUES_SQ) - moves_value_avg(game, game.get_opponent(player),
+                                                                           CELL_VALUES_SQ)
+
+
+def moves_value(game, player, values):
+    player_moves = game.get_legal_moves(player)
+    return float(sum(map(lambda m: values[m], player_moves)))
+
+
+def moves_value_avg(game, player, values):
+    player_moves = game.get_legal_moves(player)
+    nr_moves = len(player_moves)
+    if nr_moves == 0:
+        return float(0)
+    return float(sum(map(lambda m: values[m], player_moves)) / nr_moves)
 
 
 def crunch_opponent_score(game, player):
@@ -101,22 +206,24 @@ def crunch_opponent_score(game, player):
     opponent = game.get_opponent(player)
     player_location = game.get_player_location(player)
     opponent_location = game.get_player_location(opponent)
+
+    if opponent_location == None:
+        return opening_score(player_location)
+
     player_row = player_location[0]
     player_column = player_location[1]
     opponent_row = opponent_location[0]
     opponent_column = opponent_location[1]
     diff_row = abs(player_row - opponent_row)
     diff_column = abs(player_column - opponent_column)
-    if (diff_column == 1 and diff_row == 2) or (diff_column == 2 and diff_row == 1):
-        # opponent could have moved to current player location. Therefore Player 'stole' a possible move
-        return 0  # Max score for closest distance to opponent
-    else:
-        opponent_moves = game.get_legal_moves(opponent)
-        if not any(opponent_moves):
-            return float("inf")
-        opponent_distance = map(lambda l: -math.sqrt(pow(l[0] - player_row, 2) + pow(l[1] - player_column, 2)),
-                                opponent_moves)
-        return max(opponent_distance)
+    # if (diff_column == 1 and diff_row == 2) or (diff_column == 2 and diff_row == 1):
+    # opponent could have moved to current player location. Therefore Player 'stole' a possible move
+    # return 0  # Max score for closest distance to opponent
+    # else:
+    # opponent_moves = game.get_legal_moves(opponent)
+
+    # print(f"distance: {f}")
+    return -float((((opponent_row - player_row) ** 2) + ((opponent_column - player_column) ** 2)))
 
 
 def move_away_from_center_of_gravity_score(game, player):
