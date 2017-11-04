@@ -41,7 +41,7 @@ def custom_score(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    return SumCellValuesPlayerMinusSumCellValuesOpponent(game, player)
+    return SumCellValuesPlayerMinusSumCellValuesOpponentWeighted(game, player)
 
 
 def custom_score_2(game, player):
@@ -72,7 +72,7 @@ def custom_score_2(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    return SumCellValuesSqPlayerMinusSumCellSqValuesOpponent(game, player)
+    return SumCellValuesSqPlayerMinusSumCellSqValuesOpponentWeighted(game, player)
 
 
 def custom_score_3(game, player):
@@ -103,7 +103,7 @@ def custom_score_3(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    return SumCellValuesPow3PlayerMinusSumCellPow3ValuesOpponent(game, player)
+    return SumCellValuesPow3PlayerMinusSumCellPow3ValuesOpponentWeighted(game, player)
 
 
 def opening_score(location):
@@ -152,6 +152,10 @@ def SumCellValuesPlayerMinusSumCellValuesOpponent(game, player):
     return moves_value(game, player, CELL_VALUES) - moves_value(game, game.get_opponent(player), CELL_VALUES)
 
 
+def SumCellValuesPlayerMinusSumCellValuesOpponentWeighted(game, player):
+    return moves_value(game, player, CELL_VALUES) - 2 * moves_value(game, game.get_opponent(player), CELL_VALUES)
+
+
 def SumAvgCellValuesPlayerMinusSumAvgCellValuesOpponent(game, player):
     return moves_value_avg(game, player, CELL_VALUES) - moves_value_avg(game, game.get_opponent(player), CELL_VALUES)
 
@@ -170,9 +174,20 @@ def SumCellValuesSqPlayerMinusSumCellSqValuesOpponent(game, player):
     return moves_value(game, player, CELL_VALUES_SQ) - moves_value(game, game.get_opponent(player),
                                                                    CELL_VALUES_SQ)
 
+
+def SumCellValuesSqPlayerMinusSumCellSqValuesOpponentWeighted(game, player):
+    return moves_value(game, player, CELL_VALUES_SQ) - 2 * moves_value(game, game.get_opponent(player),
+                                                                       CELL_VALUES_SQ)
+
+
 def SumCellValuesPow3PlayerMinusSumCellPow3ValuesOpponent(game, player):
     return moves_value(game, player, CELL_VALUES_POW3) - moves_value(game, game.get_opponent(player),
                                                                      CELL_VALUES_POW3)
+
+
+def SumCellValuesPow3PlayerMinusSumCellPow3ValuesOpponentWeighted(game, player):
+    return moves_value(game, player, CELL_VALUES_POW3) - 2 * moves_value(game, game.get_opponent(player),
+                                                                         CELL_VALUES_POW3)
 
 
 def SumAvgCellValuesSqPlayerMinusSumAvgCellValuesSqOpponent(game, player):
