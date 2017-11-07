@@ -200,85 +200,6 @@ class AlphaBetaPlayerTests(unittest.TestCase):
 
         self.assertIn(move, [(3, 3), (6, 0)])
 
-
-class CrunchOpponentScoreTests(unittest.TestCase):
-    def setUp(self):
-        reload(game_agent)
-
-    def test_crunch_opponent_score_WhenDistance0(self):
-        player_factory = lambda: game_agent.MinimaxPlayer(search_depth=3, score_fn=sample_players.open_move_score)
-
-        player1 = player_factory()
-        player2 = player_factory()
-        board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 1, 0, 0, 0, 0, 0,
-                       0, 0, 0, 1, 1, 1, 0, 0, 0,
-                       0, 0, 1, 0, 1, 1, 1, 0, 0,
-                       0, 0, 1, 0, 0, 1, 0, 0, 0,
-                       0, 1, 0, 1, 1, 1, 1, 0, 0,
-                       0, 0, 0, 1, 0, 1, 1, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 38]
-        game = create_board_with_state(player1, player2, board_state)
-
-        self.assertEqual(game_agent.crunch_opponent_score(game, player1), 0)
-        self.assertEqual(game_agent.crunch_opponent_score(game, player2), 0)
-
-    def test_crunch_opponent_score_WhenDistanceGreaterThan0(self):
-        player_factory = lambda: game_agent.MinimaxPlayer(search_depth=3, score_fn=sample_players.open_move_score)
-
-        player1 = player_factory()
-        player2 = player_factory()
-        board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
-                       1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 23]
-        game = create_board_with_state(player1, player2, board_state)
-
-        self.assertAlmostEqual(game_agent.crunch_opponent_score(game, player1), -2.23606797749979)
-        self.assertAlmostEqual(game_agent.crunch_opponent_score(game, player2), -1)
-
-    def test_crunch_opponent_score_WhenOpponentHasLost(self):
-        player_factory = lambda: game_agent.MinimaxPlayer(search_depth=3, score_fn=sample_players.open_move_score)
-
-        player1 = player_factory()
-        player2 = player_factory()
-        board_state = [0, 0, 0, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 1, 0, 0, 0, 0, 0,
-                       0, 0, 0, 1, 1, 1, 0, 0, 0,
-                       0, 0, 1, 1, 1, 1, 1, 0, 0,
-                       0, 0, 1, 0, 0, 1, 1, 0, 0,
-                       0, 1, 0, 1, 1, 1, 1, 0, 0,
-                       0, 0, 1, 1, 0, 1, 1, 0, 0,
-                       0, 0, 0, 1, 0, 1, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 12]
-        game = create_board_with_state(player1, player2, board_state)
-
-        print(game.to_string())
-
-        self.assertEqual(game_agent.crunch_opponent_score(game, player1), float("inf"))
-        self.assertEqual(game_agent.crunch_opponent_score(game, player2), -4.242640687119285)
-
-    def test_crunch_opponent_score_WhenBoardFull(self):
-        player_factory = lambda: game_agent.MinimaxPlayer(search_depth=3, score_fn=sample_players.open_move_score)
-
-        player1 = player_factory()
-        player2 = player_factory()
-        game = create_board_with_state(player1, player2, FULL_BOARD)
-
-        self.assertAlmostEqual(game_agent.crunch_opponent_score(game, player1), float("-inf"))
-        self.assertAlmostEqual(game_agent.crunch_opponent_score(game, player2), float("inf"))
-
-    def test_crunch_opponent_score_WhenBoardEmpty(self):
-        player_factory = lambda: game_agent.MinimaxPlayer(search_depth=3, score_fn=sample_players.open_move_score)
-
-        player1 = player_factory()
-        player2 = player_factory()
-        game = create_board_with_state(player1, player2, EMPTY_BOARD)
-
-        self.assertAlmostEqual(game_agent.crunch_opponent_score(game, player1), -2.23606797749979)
-        self.assertAlmostEqual(game_agent.crunch_opponent_score(game, player2), -2.23606797749979)
-
-
 class MoveAwayFromCenterOfGravityScoreTests(unittest.TestCase):
     def setUp(self):
         reload(game_agent)
@@ -368,6 +289,41 @@ class MaximizePlayerMovesThanMinimizePlayerMovesScoreTests(unittest.TestCase):
         self.assertAlmostEqual(game_agent.maximize_player_moves_than_minimize_opponents_moves_score(game, player1), 2.0)
         self.assertAlmostEqual(game_agent.maximize_player_moves_than_minimize_opponents_moves_score(game, player2), 2.0)
 
+
+class GamePlayTests(unittest.TestCase):
+    def setUp(self):
+        reload(game_agent)
+
+    def play_game(self, game, test_player):
+        winner, moves, termination = game.play(time_limit=150)
+        print(f"Result: {'Win' if winner == test_player else 'Lost'}")
+        print(f'Termination: {termination}')
+        print(f'Moves: {moves}')
+
+    def test_play_game(self):
+        tested_player = game_agent.AlphaBetaPlayer(score_fn=game_agent.custom_score)
+        tested_player.Name = "Tested Player"
+        reference_player = game_agent.AlphaBetaPlayer(score_fn=sample_players.improved_score)
+        reference_player.Name = "Reference Player"
+
+        game = isolation.Board(tested_player, reference_player)
+        opposite_game = isolation.Board(reference_player, tested_player)
+
+        self.play_game(game,tested_player)
+        self.play_game(opposite_game,tested_player)
+
+    def test_measure_board(self):
+        player = game_agent.AlphaBetaPlayer()
+        game = isolation.Board(player, game_agent.AlphaBetaPlayer(),height=7, width=7)
+
+        valueList = []
+        for row, column in [(row, column) for row in range(game.height) for column in range(game.width)]:
+            new_state = game.forecast_move((row,column))
+            nr_moves = len(new_state.get_legal_moves(player))
+            valueList.append(f'({row},{column}):{nr_moves}')
+
+
+        print(f'{{{",".join(valueList)}}}')
 
 if __name__ == '__main__':
     unittest.main()
