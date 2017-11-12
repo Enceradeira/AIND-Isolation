@@ -462,7 +462,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         # return self.value(game, depth, alpha, beta, self.max_value, lambda u, b: u < b)
         legal_moves = game.get_legal_moves()
-        if self.is_terminal(game, legal_moves, depth):
+        if self.is_terminal(game, depth):
             return (None, self.score(game, self))
 
         optimal_move = None
@@ -483,7 +483,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         # return self.value(game, depth, alpha, beta, self.min_value, lambda u, b: u > b)
         legal_moves = game.get_legal_moves()
-        if self.is_terminal(game, legal_moves, depth):
+        if self.is_terminal(game, depth):
             return (None, self.score(game, self))
 
         optimal_move = None
@@ -497,7 +497,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         return optimal_move
 
-    def is_terminal(self, game, legal_moves, depth):
+    def is_terminal(self, game, depth):
         """ Checks if the at this level of the game tree a score should be returned.
         :return : True for a score should be returned, False for continuing evaluating down the game tree.
         """
@@ -505,4 +505,5 @@ class AlphaBetaPlayer(IsolationPlayer):
             raise SearchTimeout()
 
         # either depth reached for estimation or game is over
-        return depth == 0 or not any(legal_moves)
+        active_player = game.active_player;
+        return depth == 0 or game.is_loser(active_player) or game.is_winner(active_player)
