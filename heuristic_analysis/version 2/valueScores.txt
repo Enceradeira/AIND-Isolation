@@ -1,0 +1,20 @@
+                        *************************                         
+                             Playing Matches                              
+                        *************************                         
+
+ Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3 
+                        Won | Lost   Won | Lost   Won | Lost   Won | Lost 
+    1       Random      187 |  13    185 |  15    184 |  16    190 |  10  
+    2       MM_Open     145 |  55    147 |  53    159 |  41    164 |  36  
+    3      MM_Center    175 |  25    188 |  12    177 |  23    178 |  22  
+    4     MM_Improved   141 |  59    152 |  48    146 |  54    154 |  46  
+    5       AB_Open     108 |  92    106 |  94    126 |  74    118 |  82  
+    6      AB_Center    121 |  79    119 |  81    118 |  82    123 |  77  
+    7     AB_Improved   101 |  99    107 |  93    107 |  93    111 |  89  
+--------------------------------------------------------------------------
+           Win Rate:      69.9%        71.7%        72.6%        74.1%    
+
+
+AB_Custom 	= ValueScore   
+AB_Custom_2	= Value2Score  
+AB_Custom_3 	= Value3Score 

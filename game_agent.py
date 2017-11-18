@@ -41,7 +41,7 @@ def custom_score(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    return Value2WeightedScore(game, player)
+    return ValueScore (game, player)
 
 
 def custom_score_2(game, player):
@@ -72,7 +72,7 @@ def custom_score_2(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    return Value2Score(game, player)
+    return Value2WeightedScore (game, player)
 
 
 def custom_score_3(game, player):
@@ -103,7 +103,7 @@ def custom_score_3(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    return ValueWeightedScore(game, player)
+    return Value3Score (game, player)
 
 
 def opening_score(location):
@@ -139,38 +139,86 @@ CELL_VALUES_POW3 = {(0, 0): 0.02, (0, 1): 0.06, (0, 2): 0.13, (0, 3): 0.13, (0, 
 
 
 def SumCellValuesPlayer(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     player_moves_value = moves_value(game, player, CELL_VALUES)
     return player_moves_value
 
 def ValueScore(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     return moves_value(game, player, CELL_VALUES) - moves_value(game, game.get_opponent(player), CELL_VALUES)
 
 
 def ValueWeightedScore(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     return moves_value(game, player, CELL_VALUES) - 2 * moves_value(game, game.get_opponent(player), CELL_VALUES)
 
 
 def SumCellValuesSqPlayer(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     player_moves_value = moves_value(game, player, CELL_VALUES_SQ)
     return player_moves_value
 
 
 def Value2Score(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     return moves_value(game, player, CELL_VALUES_SQ) - moves_value(game, game.get_opponent(player),
                                                                    CELL_VALUES_SQ)
 
 
 def Value2WeightedScore(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     return moves_value(game, player, CELL_VALUES_SQ) - 2 * moves_value(game, game.get_opponent(player),
                                                                        CELL_VALUES_SQ)
 
 
 def Value3Score(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     return moves_value(game, player, CELL_VALUES_POW3) - moves_value(game, game.get_opponent(player),
                                                                      CELL_VALUES_POW3)
 
 
 def Value3WeightedScore(game, player):
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     return moves_value(game, player, CELL_VALUES_POW3) - 2 * moves_value(game, game.get_opponent(player),
                                                                          CELL_VALUES_POW3)
 
